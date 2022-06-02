@@ -1,14 +1,9 @@
-function [outputStatus] = singleCamAcquisitionDiskLoggingTimed(inputCam, camNum, sweepTimeSeconds, curdir, sweepNum, freq)
+function [outputStatus] = singleCamAcquisitionDiskLoggingTimed(inputCam, mouseNum, session, sweepTimeSeconds, curdir, freq)
 
 %% init
-
-
 triggerconfig(inputCam, 'manual');
 inputCam.FramesPerTrigger = 1;
 inputCam.TriggerRepeat = Inf;
-
-
-
 
 % src=getselectedsource(inputCam);
 % src.FrameRate = freq;
@@ -17,11 +12,8 @@ inputCam.TriggerRepeat = Inf;
 %%
 filetime = datestr(datetime,'yyyymmdd-HH-MM-SS');
 addpath(curdir);
-vidfileName = [curdir, '\', filetime, '_', imaqhwinfo(inputCam).AdaptorName, ...
-    '_', imaqhwinfo(inputCam).DeviceName,'_', num2str(camNum)]
-
-
-
+vidfileName = [curdir, '\', filetime,'_', session, '-', num2str(mouseNum),  ...
+    '_', imaqhwinfo(inputCam).DeviceName(1:4)]
 
 %%
 vidfile = VideoWriter(vidfileName);
@@ -39,7 +31,7 @@ start(inputCam);
 %frameTimes = datetime(zeros(frames,1), 0, 0, 'format', 'HH:mm:ss.SSS');
 frameTimes = datetime('now', 'format', 'HH:mm:ss.SSS');
 tic
-while toc< sweepTimeSeconds & exist('stopSign.mat','file')~=2
+while toc< sweepTimeSeconds
     %for i = 1:frames
     
     if islogging(inputCam)== 0
@@ -48,8 +40,8 @@ while toc< sweepTimeSeconds & exist('stopSign.mat','file')~=2
     else
         %         disp('waiting for disk writing');
         while islogging(inputCam)== 1
-%             java.lang.Thread.sleep(1);
-                         pause(0.001)
+            %             java.lang.Thread.sleep(1);
+            pause(0.001)
         end
     end
     
@@ -59,20 +51,25 @@ while toc< sweepTimeSeconds & exist('stopSign.mat','file')~=2
     %     disp('frames logged to disk');
     %     disp(inputCam.DiskLoggerFrameCount);
     
-%     currentTime = datetime('now', 'format', 'HH:mm:ss.SSS');
+    %     currentTime = datetime('now', 'format', 'HH:mm:ss.SSS');
+    if round(rem(toc, 30)) == 0 & exist('stopSign.mat','file')==2
+        break;
+    end
     
+end
+
+
+
+%wait for final frame
+if inputCam.DiskLoggerFrameCount~=inputCam.FramesAcquired
+    %     java.lang.Thread.sleep(1);
+    pause(0.001);
 end
 
 outputStatus = inputCam.DiskLoggerFrameCount/toc
 
-%wait for final frame
-if inputCam.DiskLoggerFrameCount~=inputCam.FramesAcquired
-%     java.lang.Thread.sleep(1);
-        pause(0.001);
-end
-
-expname = [curdir, '\', filetime , '_' , imaqhwinfo(inputCam).AdaptorName, ...
-    '_', imaqhwinfo(inputCam).DeviceName , '_' , num2str(camNum) , '_time.csv'];
+expname = [curdir, '\', filetime,'_', session, '-', num2str(mouseNum),  ...
+    '_', imaqhwinfo(inputCam).DeviceName(1:4) , '_time.csv'];
 writematrix(frameTimes, expname);
 %
 disp('frames acquired from stream');

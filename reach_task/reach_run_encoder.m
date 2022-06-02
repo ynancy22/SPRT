@@ -1,11 +1,12 @@
 %% Run once on Shaping day1
 reach_init_batch()
 
+
 %% initiate cameras
 imaqreset
 [cam, behavCam, behavCam2, dq] = reach_init_system(...
-    'webCam_name', 'winvideo', 'webCam_devicenum',2, 'webCam_imgformat', 'MJPG_1280x720', ...    
-    'behavCam_name', 'winvideo', 'behavCam_devicenum', 4, 'behavCam_imgformat', 'RGB24_720x540', ...
+    'webCam_name', 'winvideo', 'webCam_devicenum',1, 'webCam_imgformat', 'MJPG_1280x720', ...    
+    'behavCam_name', 'winvideo', 'behavCam_devicenum', 2, 'behavCam_imgformat', 'RGB24_720x540', ...
     'behavCam2_name', 'off', 'behavCam2_devicenum', 4, 'behavCam2_imgformat', 'Y800_720x540')
 %    'DAQ', 'ni');
 % imaqtool
@@ -69,30 +70,35 @@ preview(behavCam)
 
 % Load previous batch folder and excel file
 basedir = 'C:\Users\nyl6494\Documents\SPRT';
-pdir = uigetdir(basedir, 'Select batch folder') ;
+% pdir = uigetdir(basedir, 'Select batch folder') ;
+
+[log_name,pdir]= uigetfile([basedir,'\save.xlsx'], 'Select log excel');
 addpath(pdir)
-[log_name,~]= uigetfile([pdir,'\save.xlsx'], 'Select log excel');
 log_name = [pdir,'\',log_name];
 
 % Create folder for today's session
 [reach_data, session, curdir] = reach_init_day(pdir);
 winopen(pdir);
 
-% Start 2 parallel pools
+%% Start 2 parallel pools
 delete(gcp('nocreate'));
 maxNumCompThreads(2);
-%create parallel pool with two workers
+%create parallel pool with twoT workers
 p = parpool(2);
 % winopen(pdir)
-%% Run 10 sec rec test with two cams
+%% Run 60 sec rec test with two cams
 close all
-reach_test_sys(cam, behavCam, 10, pdir, 150, 30);
+if java.io.File(curdir).getFreeSpace/(1024^3) < 6
+    error("Disc space full")
+end   
+    
+reach_test_sys(cam, behavCam, 60, pdir, 30,150);
 
 %% Shaping days: reach data only
 % timer_gui(600)
 
-mouse_num = input("Mouse num? ");
-reach_data= reach_precision_mouse(reach_data, session, mouse_num, log_name);
+mouseNum = input("Mouse num? ");
+reach_data= reach_precision_mouse(reach_data, session, mouseNum, log_name);
 % auto save reach data for each trial
 
 % reach_data = reach_train_mouse(reach_data, 10, mouse_num);
@@ -100,26 +106,31 @@ reach_data= reach_precision_mouse(reach_data, session, mouse_num, log_name);
 
 %% Set training time (sec)
 clc;
-sweepTime = 600;
+sweepTime =600;
 
 %% Training days: reach data with timestamped videos
 % disp("=============")
+% check disc space
+if java.io.File(curdir).getFreeSpace/(1024^3) < 10
+    error("Disc space full")
+end   
+    
 stop(cam); stop(behavCam);
-delete ('stopSign.mat')
+delete('stopSign.mat')
 disp('Run trial')
-mouse_num = input("Mouse num? ");
+mouseNum = input("Mouse num? ");
 
-f1 = parfeval(@singleCamAcquisitionDiskLoggingTimed, 1, behavCam, 1, sweepTime, curdir, 1, 150);
-f2 = parfeval(@singleCamAcquisitionDiskLoggingTimed, 1, cam, 2, sweepTime, curdir, 1, 30);
-% f3 = parfeval(@singleCamAcquisitionDiskLoggingTimed, 1, behavCam2, 2, sweepTime, pdir, 1, src_behav2.FrameRate, src_behav2);
+f1 = parfeval(@singleCamAcquisitionDiskLoggingTimed, 1, cam, mouseNum, session, sweepTime, curdir, 30);
+f2 = parfeval(@singleCamAcquisitionDiskLoggingTimed, 1, behavCam, mouseNum, session, sweepTime, curdir, 150);
+% f3 = parfeval(@singleCamAcquisitionDiskLoggingTimed,244 1, behavCam2, 2, sweepTime, pdir, 1, src_behav2.FrameRate, src_behav2);
 
-reach_data= reach_precision_mouse(reach_data, session, mouse_num, log_name);
+reach_data= reach_precision_mouse(reach_data, session, mouseNum, sweepTime, log_name);
 % reach_save_train(mouse_data, pdir, log_name, 1)
-save('stopSign.mat','session')
+save('stopSign.mat','mouseNum')
 
 % [vidFPS_cam] = fetchOutputs(f1)
 % [vidFPS_pCam] = fetchOutputs(f2)
-[vidFPS_behavCam_cam] = [fetchOutputs(f1), fetchOutputs(f2)]
+[vidFPS_cam_behavCam] = [fetchOutputs(f1), fetchOutputs(f2)]
 % [outputState_pCam2] = fetchOutputs(f3)
 % delete ('stopSign.mat')
 
@@ -131,3 +142,4 @@ reach_save_trial(reach_data, session, pdir)
 %% Shut down system
 cam = imaqfind; delete(cam);
 delete(gcp('nocreate'))
+delete('stopSign.mat')

@@ -1,4 +1,4 @@
-function all_data = reach_precision_mouse(all_data, session, mouse_num, output_xls)
+function all_data = reach_precision_mouse(all_data, session, mouse_num, sweepTime, output_xls)
 % log *mouseNum* mouse to *reach_data* with unlimited reach
 % data ouput:
 % mouseNum, [reach trials], success count, total count, success rate
@@ -25,7 +25,7 @@ end
 
 tic
 
-while toc < 600  & nnz(trials)<pellet_num
+while toc < sweepTime  & nnz(trials)<pellet_num
     reach = [];
     while isempty(reach)
         reach = input("Next reach: ");
