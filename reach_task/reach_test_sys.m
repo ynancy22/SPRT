@@ -16,7 +16,7 @@ stop(behavCam)
 f1 = parfeval(@singleCamAcquisitionDiskLoggingTimed, 1, cam, 1, sweepTime,testdir , 1, camFPS);
 f2 = parfeval(@singleCamAcquisitionDiskLoggingTimed, 1, behavCam, 2, sweepTime, testdir, 1, behavFPS);
 
-reach_precision_mouse([], "test system", [], "off");
+reach_precision_mouse([], "test system", sweepTime, [], "off");
 save('stopSign.mat','behavFPS')
 
 [outputState_cam] = fetchOutputs(f1);

@@ -92,7 +92,7 @@ reach_test_sys(cam, behavCam, 10, pdir, 150, 30);
 % timer_gui(600)
 
 mouse_num = input("Mouse num? ");
-reach_data= reach_precision_mouse(reach_data, session, mouse_num, log_name);
+reach_data= reach_precision_mouse(reach_data, session, Inf, mouse_num, log_name);
 % auto save reach data for each trial
 
 % reach_data = reach_train_mouse(reach_data, 10, mouse_num);
@@ -113,7 +113,7 @@ f1 = parfeval(@singleCamAcquisitionDiskLoggingTimed, 1, behavCam, 1, sweepTime, 
 f2 = parfeval(@singleCamAcquisitionDiskLoggingTimed, 1, cam, 2, sweepTime, curdir, 1, 30);
 % f3 = parfeval(@singleCamAcquisitionDiskLoggingTimed, 1, behavCam2, 2, sweepTime, pdir, 1, src_behav2.FrameRate, src_behav2);
 
-reach_data= reach_precision_mouse(reach_data, session, mouse_num, log_name);
+reach_data= reach_precision_mouse(reach_data, session, sweepTime, mouse_num, log_name);
 % reach_save_train(mouse_data, pdir, log_name, 1)
 save('stopSign.mat','session')
 
