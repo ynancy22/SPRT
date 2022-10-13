@@ -109,11 +109,11 @@ delete ('stopSign.mat')
 disp('Run trial')
 mouse_num = input("Mouse num? ");
 
-f1 = parfeval(@singleCamAcquisitionDiskLoggingTimed, 1, behavCam, 1, sweepTime, curdir, 1, 150);
-f2 = parfeval(@singleCamAcquisitionDiskLoggingTimed, 1, cam, 2, sweepTime, curdir, 1, 30);
+[f1,camTimes] = parfeval(@singleCamAcquisitionDiskLoggingTimed, 2, behavCam, 1, sweepTime, curdir, 1, 150);
+[f2,~] = parfeval(@singleCamAcquisitionDiskLoggingTimed, 2, cam, 2, sweepTime, curdir, 1, 30);
 % f3 = parfeval(@singleCamAcquisitionDiskLoggingTimed, 1, behavCam2, 2, sweepTime, pdir, 1, src_behav2.FrameRate, src_behav2);
 
-reach_data= reach_precision_mouse(reach_data, session, sweepTime, mouse_num, log_name);
+[reach_data, reachTimes] = reach_precision_mouse(reach_data, session, sweepTime, mouse_num, log_name);
 % reach_save_train(mouse_data, pdir, log_name, 1)
 save('stopSign.mat','session')
 
@@ -122,6 +122,9 @@ save('stopSign.mat','session')
 [vidFPS_behavCam_cam] = [fetchOutputs(f1), fetchOutputs(f2)]
 % [outputState_pCam2] = fetchOutputs(f3)
 % delete ('stopSign.mat')
+
+% align reach time in cam time
+reach_align_result(reachTimes, camTimes, curdir, session, mouse_num)
 
 disp("Trial DONE")
 disp("=============")

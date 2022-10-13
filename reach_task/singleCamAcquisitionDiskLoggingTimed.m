@@ -1,4 +1,4 @@
-function [outputStatus] = singleCamAcquisitionDiskLoggingTimed(inputCam, camNum, sweepTimeSeconds, curdir, sweepNum, freq)
+function [outputStatus, frameTimes] = singleCamAcquisitionDiskLoggingTimed(inputCam, camNum, sweepTimeSeconds, curdir, sweepNum, freq)
 
 %% init
 
