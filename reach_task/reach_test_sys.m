@@ -10,19 +10,19 @@ delete('stopSign.mat')
 disp('System test START')
 
 testdir = [pdir,'\test'];
+session = "test";
+mouseNum = 0;
 stop(cam)
 stop(behavCam)
 
-f1 = parfeval(@singleCamAcquisitionDiskLoggingTimed, 1, cam, 1, sweepTime,testdir , 1, camFPS);
-f2 = parfeval(@singleCamAcquisitionDiskLoggingTimed, 1, behavCam, 2, sweepTime, testdir, 1, behavFPS);
+f1 = parfeval(@singleCamAcquisitionDiskLoggingTimed, 1, cam, mouseNum, session, sweepTime, testdir , camFPS);
+f2 = parfeval(@singleCamAcquisitionDiskLoggingTimed, 1, behavCam, mouseNum, session, sweepTime, testdir, behavFPS);
 
-reach_precision_mouse([], "test system", sweepTime, [], "off");
+reach_precision_mouse([], "test system", mouseNum, sweepTime, "off");
 save('stopSign.mat','behavFPS')
 
-[outputState_cam] = fetchOutputs(f1);
-[outputState_pCam] = fetchOutputs(f2);
-
-
+[outputState_cam] = fetchOutputs(f1)
+[outputState_pCam] = fetchOutputs(f2)
 
 % show recorded file
 % cd(pdir)

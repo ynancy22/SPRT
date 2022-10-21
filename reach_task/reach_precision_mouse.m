@@ -1,4 +1,4 @@
-function [all_data, reachTimes] = reach_precision_mouse(all_data, session, time_sec, mouse_num, output_xls)
+function [all_data, reachTimes] = reach_precision_mouse(all_data, session, mouse_num, sweepTime, output_xls)
 % log *mouseNum* mouse to *reach_data* with unlimited reach
 % data ouput:
 % mouseNum, [reach trials], success count, total count, success rate
@@ -18,15 +18,19 @@ reachTimes = [];
 
 if count(session,"S")
     pellet_num = 10;
+    out_col = [1:14];
+    sheet_num = 2;
 elseif count(session,"T")
     pellet_num = 20;
+    out_col = [1:8];
+    sheet_num = 1;
 else
     pellet_num = inf;
 end
 
 tic
 
-while toc < time_sec  & nnz(trials)<pellet_num
+while toc < sweepTime  & nnz(trials)<pellet_num
     reach = [];
     while isempty(reach)
         reach = input("Next reach: ");
@@ -39,28 +43,29 @@ while toc < time_sec  & nnz(trials)<pellet_num
         disp([num2str(toc), ' sec, ',num2str(nnz(trials)),' pellets'])
     elseif reach < 4
         trials = [trials, reach];
-        reachTimes = [reachTimes, datetime('now', 'format', 'HH:mm:ss.SSS')];
+        reachTimes = [reachTimes; datetime('now', 'format', 'HH:mm:ss.SSS')];
     end
     
 end
-%
+%% 
 if count(session,"S") % Shaping: 1=Left/3=Right
     single_data = {session, startTime, mouse_num, round(mean(trials),2) , trials};
-    sheet_num = 2;
+
 else % Training: 2=1st attempt/1=succes/0=fail
     single_data = {session, startTime, mouse_num, ...
         size(strfind(trials,"2"),2), nnz(trials), length(trials), ...
-        nnz(trials)/length(trials), num2str(trials)};
-    reachTimes = {trials;reachTimes};
-    sheet_num = 1;
+        nnz(trials)/length(trials), num2str(trials), reachTimes'};
+    reachTimes = {trials',reachTimes};
+    
 end
 
 %%
 if output_xls == "off";
     disp("Result not saved")
 else
-    writecell(single_data, output_xls, 'Sheet', sheet_num, 'WriteMode','append');
+    writecell(single_data(1,out_col), output_xls, 'Sheet', sheet_num, 'WriteMode','append');
 end
 disp(['Finished: ',num2str(toc), ' sec, ',num2str(nnz(trials)),' pellets retrieved'])
+
 all_data = [all_data; single_data]
 end
