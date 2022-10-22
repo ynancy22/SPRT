@@ -1,11 +1,11 @@
-function reach_align_result(reachTimes, behavcamTimes, camTimes, curdir, session, mouseNum)
+function reach_align_result(reachTimes, behavCamTimes, camTimes, curdir, session, mouseNum)
 % match manual input result with camera timestamp 
 % save as reachTimes.xlsx
 
 %% Load data
 reachResult = reachTimes{1,1};
 reachTimestamp = reachTimes{1,2};
-behavcamTimestamp = unique(behavcamTimes);
+behavcamTimestamp = unique(behavCamTimes);
 camTimestamp = unique(camTimes);
 %% find the matching timestamp 
 t1 = interp1(behavcamTimestamp, behavcamTimestamp, reachTimestamp, 'nearest', 'extrap');
@@ -14,8 +14,8 @@ count = length(reachTimestamp);
 reachFrame = NaN(count,2);
 %% extract frame number for matched timestamps
 for i = 1:count
-    reachFrame(i,1) = find(behavcamTimes==t1(i));
-    reachFrame(i,2) = find(camTimes==t2(i));
+    reachFrame(i,1) = find(behavCamTimes==t1(i),1);
+    reachFrame(i,2) = find(camTimes==t2(i),1);
 end
 
 %% Save result
