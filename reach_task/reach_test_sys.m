@@ -9,20 +9,23 @@ warning off
 delete('stopSign.mat')
 disp('System test START')
 
-testdir = [pdir,'\test'];
+testdir = [pdir,'test'];
 session = "test";
 mouseNum = 0;
 stop(cam)
 stop(behavCam)
 
-f1 = parfeval(@singleCamAcquisitionDiskLoggingTimed, 1, cam, mouseNum, session, sweepTime, testdir , camFPS);
-f2 = parfeval(@singleCamAcquisitionDiskLoggingTimed, 1, behavCam, mouseNum, session, sweepTime, testdir, behavFPS);
+f1 = parfeval(@singleCamAcquisitionDiskLoggingTimed, 2, cam, mouseNum, session, sweepTime, testdir , camFPS);
+f2 = parfeval(@singleCamAcquisitionDiskLoggingTimed, 2, behavCam, mouseNum, session, sweepTime, testdir, behavFPS);
 
-reach_precision_mouse([], "test system", mouseNum, sweepTime, "off");
+[~, reachTimes] = reach_precision_mouse([], "test system", mouseNum, sweepTime, "off");
 save('stopSign.mat','behavFPS')
 
-[outputState_cam] = fetchOutputs(f1)
-[outputState_pCam] = fetchOutputs(f2)
+[behavFPS, behavCamTimes] = fetchOutputs(f1);
+[camFPS, camTimes] = fetchOutputs(f2);
+[camFPS, behavFPS]
+
+reach_align_result(reachTimes, behavCamTimes, camTimes, pdir, session, mouseNum)
 
 % show recorded file
 % cd(pdir)

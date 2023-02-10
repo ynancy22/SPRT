@@ -1,38 +1,38 @@
 %% initiate DAQ and cameras
 function [cam, behavCam, behavCam2, dq] = reach_init_system(options)
 %% specify optional arguments depending on which components to use
-% e.g. for FLIR camera 
+% e.g. for FLIR camera
 % cam = videoinput('pointgrey', 1,'F7_Mono8_1920x1200_Mode0');
 % cam = videoinput('winvideo', 2,'RGB24_744x480');
 % behavCam = videoinput('winvideo', 1, 'MJPG_1024x576');
 % close EVERYTHING!
-    arguments
-        options.webCam_name (1,1) string = 'off';
-        options.webCam_devicenum (1,1)  double = 0;
-        options.webCam_imgformat (1,1)  string = 'off';
-        options.behavCam_name (1,1) string = 'off';
-        options.behavCam_devicenum (1,1)  double = 0;
-        options.behavCam_imgformat (1,1)  string = 'off';
-        options.behavCam2_name (1,1) string = 'off';
-        options.behavCam2_devicenum (1,1)  double = 0;
-        options.behavCam2_imgformat (1,1)  string = 'off';
-        options.DAQ (1,1) string = 'off'; 
-    end
+arguments
+    options.webCam_name (1,1) string = 'off';
+    options.webCam_devicenum (1,1)  double = 0;
+    options.webCam_imgformat (1,1)  string = 'off';
+    options.behavCam_name (1,1) string = 'off';
+    options.behavCam_devicenum (1,1)  double = 0;
+    options.behavCam_imgformat (1,1)  string = 'off';
+    options.behavCam2_name (1,1) string = 'off';
+    options.behavCam2_devicenum (1,1)  double = 0;
+    options.behavCam2_imgformat (1,1)  string = 'off';
+    options.DAQ (1,1) string = 'off';
+end
 %% config DAQ and FLIR
 % close EVERYTHING!
-prev_cam = imaqfind; delete(prev_cam); %clear all; close all; 
+prev_cam = imaqfind; delete(prev_cam); %clear all; close all;
 %delete(gcp('nocreate'));
 
 %% FLIR camera config
 % create video input object
-% conifgure video object for manual triggering 
+% conifgure video object for manual triggering
 
 if strcmp(options.webCam_name,'off')==0
     cam = videoinput(options.webCam_name, options.webCam_devicenum, options.webCam_imgformat);
     triggerconfig(cam, 'manual');
     cam.FramesPerTrigger = 1;
     cam.TriggerRepeat = Inf;
- 
+    
 else strcmp(options.webCam_name,'off')
     cam = 'off';
 end
@@ -46,7 +46,7 @@ if strcmp(options.behavCam_name,'off')==0
     
 else strcmp(options.behavCam_name,'off')
     behavCam='off';
-end 
+end
 
 %% behavCam 2
 
@@ -58,14 +58,14 @@ if strcmp(options.behavCam2_name,'off')==0
     
 else strcmp(options.behavCam2_name,'off')
     behavCam2='off';
-end 
+end
 
 %% DAQ config
 if strcmp(options.DAQ, 'ni')
     dq = daq.createSession('ni');
-    %pre 2020a code 
+    %pre 2020a code
     %ch=dq.addAnalogOutputChannel('Dev1',0:1,'Voltage');
-    %all off 
+    %all off
     %outputSingleScan(dq,[0 0])
     %post 2020a code
     %addoutput(dq, "Dev1", 'ao0', 'Voltage');
@@ -74,9 +74,26 @@ if strcmp(options.DAQ, 'ni')
     % execute trigger frequency by external code in the loop
     %write(dq, [0 0]);    % set DAQ channels off
     %assignin('base','dq',dq);
+    dq.addDigitalChannel('Dev1', 'port1/line3', 'OutputOnly');
+    outputSingleScan(dq,0)
+    
     disp("DAQ done");
+    
+elseif strcmp(options.DAQ, '2daq');
+    d_1 = daq("ni");  
+    d_2 = daq('ni');
+    
+    ch_o1 = addoutput(d_2,'Dev2', 'port1/line3', 'Digital');
+    ch_o0 = addoutput(d_1, 'Dev2', 'ao0', 'Voltage');
+    
+    %     dq = daq('ni');
+    %     addoutput(dq, 'Dev2', 'ao0', 'Voltage');
+    d_1.Rate = 100;
+    dq = [d_1,d_2];
+    
+    
 else strcmp(options.DAQ, 'off')
-    dq = 'off'; 
-end 
+    dq = 'off';
+end
 end
 

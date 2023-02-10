@@ -12,14 +12,15 @@ inputCam.TriggerRepeat = Inf
 %%
 filetime = datestr(datetime,'yyyymmdd-HH-MM-SS')
 addpath(curdir)
-vidfileName = [curdir+ "\"+ filetime+"_"+ session+ "-"+ num2str(mouseNum)+  ...
+vidfileName = [curdir+"\"+ filetime+"_"+ session+ "-"+ num2str(mouseNum)+  ...
     "_"+strtrim(imaqhwinfo(inputCam).DeviceName(1:4))];
 
 vidfile = VideoWriter(vidfileName);
 vidfile.FrameRate = freq;
+% vidfile.Quality = 75;
 inputCam.LoggingMode = 'disk';
 inputCam.DiskLogger = vidfile;
-
+%%
 open(vidfile);
 start(inputCam);
 
@@ -27,15 +28,15 @@ start(inputCam);
 % startTime = datetime('now', 'format', 'HH:mm:ss.SSS');
 % currentTime = datetime('now', 'format', 'HH:mm:ss.SSS');
 
-frameTimes = datetime('now', 'format', 'HH:mm:ss.SSS');
-
+frameTimes = [];
+%%
 tic
 while toc< sweepTimeSeconds
     %for i = 1:frames
 
     if islogging(inputCam) == 0
         trigger(inputCam) ;
-        frameTimes = [frameTimes ; datetime('now', 'format', 'HH:mm:ss.SSS')];
+        frameTimes = [frameTimes ; datetime('now', 'format', 'yyyy-MM-DD HH:mm:ss.SSS')];
     else
         %         disp('waiting for disk writing');
         while islogging(inputCam)== 1
@@ -67,9 +68,9 @@ end
 
 finalFPS = inputCam.DiskLoggerFrameCount/toc
 %%
-expname = [curdir+"\"+ filetime+"_"+ session+"-"+ num2str(mouseNum)+  ...
+log_name = [curdir+"\"+ filetime+"_"+ session+"-"+ num2str(mouseNum)+  ...
     "_"+ strtrim(imaqhwinfo(inputCam).DeviceName(1:4))+ "_time.csv"];
-writematrix(frameTimes, expname);
+writematrix(frameTimes, log_name);
 %
 disp('frames acquired from stream');
 disp(inputCam.FramesAcquired);

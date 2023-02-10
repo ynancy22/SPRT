@@ -12,13 +12,13 @@ disp(['Start time: ' , startTime])
 disp("Shaping: R=1/L=3/other=2")
 disp("Training: Success=1/Fail=0")
 disp("Other: Time&pellet=7/Finish=9")
-
+    
 trials = [];
 reachTimes = [];
 
 if count(session,"S")
     pellet_num = 10;
-    out_col = [1:14];
+    out_col = [1:5];
     sheet_num = 2;
 elseif count(session,"T")
     pellet_num = 20;
@@ -43,18 +43,21 @@ while toc < sweepTime  & nnz(trials)<pellet_num
         disp([num2str(toc), ' sec, ',num2str(nnz(trials)),' pellets'])
     elseif reach < 4
         trials = [trials, reach];
-        reachTimes = [reachTimes; datetime('now', 'format', 'HH:mm:ss.SSS')];
+        reachTimes = [reachTimes; datetime('now', 'format', 'yyyy-MM-DD HH:mm:ss.SSS')];
     end
     
 end
 %% 
+
+elapseTime = toc;
+
 if count(session,"S") % Shaping: 1=Left/3=Right
     single_data = {session, startTime, mouse_num, round(mean(trials),2) , trials};
 
 else % Training: 2=1st attempt/1=succes/0=fail
     single_data = {session, startTime, mouse_num, ...
         size(strfind(trials,"2"),2), nnz(trials), length(trials), ...
-        nnz(trials)/length(trials), num2str(trials), reachTimes'};
+        nnz(trials)/length(trials), elapseTime, length(trials)/elaspeTime, num2str(trials), reachTimes'};
     reachTimes = {trials',reachTimes};
     
 end
@@ -65,7 +68,7 @@ if output_xls == "off";
 else
     writecell(single_data(1,out_col), output_xls, 'Sheet', sheet_num, 'WriteMode','append');
 end
-disp(['Finished: ',num2str(toc), ' sec, ',num2str(nnz(trials)),' pellets retrieved'])
+disp(['Finished: ',num2str(elapseTime), ' sec, ',num2str(nnz(trials)),' pellets retrieved'])
 
 all_data = [all_data; single_data]
 end
